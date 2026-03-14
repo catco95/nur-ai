@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Nur AI — Islamic Poster Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#040302;color:rgba(200,145,58,0.9);font-family:'Cinzel',Georgia,serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px;gap:18px}
+.moon{font-size:48px;text-align:center;filter:drop-shadow(0 0 16px rgba(200,145,58,0.5))}
+.title{font-size:24px;font-weight:700;color:#E5B86A;letter-spacing:2px;text-align:center}
+.sub{font-size:9px;color:rgba(200,145,58,0.3);letter-spacing:4px;text-align:center;margin-top:2px}
+.card{width:100%;max-width:500px;background:#0A0700;border:1px solid rgba(200,145,58,0.22);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.label{font-size:9px;letter-spacing:2px;color:rgba(200,145,58,0.3);text-transform:uppercase}
+input{width:100%;background:rgba(200,145,58,0.07);border:1px solid rgba(200,145,58,0.22);border-radius:10px;color:rgba(200,145,58,0.9);font-size:14px;padding:14px 16px;outline:none;font-family:monospace}
+input:focus{border-color:#C8913A}
+input::placeholder{color:rgba(200,145,58,0.25);font-size:11px}
+.hint{font-size:9px;color:rgba(200,145,58,0.25);text-align:center;font-family:Georgia,serif}
+.ptype{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;border:1px solid rgba(200,145,58,0.15);background:rgba(200,145,58,0.03);cursor:pointer;transition:.18s;margin-bottom:8px}
+.ptype:hover{border-color:#C8913A;background:rgba(200,145,58,0.08)}
+.ptype.on{border-color:#C8913A;background:rgba(200,145,58,0.12)}
+.ptype-icon{font-size:24px}
+.ptype-name{font-size:13px;font-weight:700;color:rgba(200,145,58,0.6)}
+.ptype.on .ptype-name{color:#E5B86A}
+.ptype-desc{font-size:9px;color:rgba(200,145,58,0.3);margin-top:2px;font-family:Georgia,serif}
+.ptype-check{margin-left:auto;color:#C8913A;font-size:18px;display:none}
+.ptype.on .ptype-check{display:block}
+.gen-btn{width:100%;max-width:500px;padding:20px;border-radius:14px;border:none;background:linear-gradient(135deg,#5A3206,#C8913A,#E5B86A);color:#F5D090;font-size:17px;font-weight:700;letter-spacing:2px;cursor:pointer;font-family:'Cinzel',serif;box-shadow:0 6px 28px rgba(200,145,58,0.4)}
+.gen-btn:disabled{opacity:.3;cursor:not-allowed}
+.loading{display:none;flex-direction:column;align-items:center;gap:14px;padding:30px;text-align:center}
+.spin{font-size:52px;animation:spin 2s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-title{font-size:14px;font-weight:700;color:#E5B86A;letter-spacing:2px}
+.load-msg{font-size:11px;color:rgba(200,145,58,0.4);font-family:Georgia,serif}
+.prog{width:240px;height:3px;background:rgba(200,145,58,0.1);border-radius:2px;overflow:hidden}
+.prog-bar{height:100%;background:linear-gradient(90deg,#C8913A,#E5B86A);border-radius:2px;width:0;transition:width .5s}
+.errbox{display:none;width:100%;max-width:500px;background:rgba(180,30,30,0.1);border:1px solid rgba(180,30,30,0.3);border-radius:12px;padding:20px;text-align:center}
+.err-t{font-size:14px;color:rgba(240,100,100,0.9);font-weight:700;margin-bottom:8px}
+.err-m{font-size:11px;color:rgba(240,150,150,0.65);font-family:Georgia,serif;line-height:1.8}
+.result{display:none;flex-direction:column;width:100%;max-width:500px;gap:12px}
+.result img{width:100%;border-radius:12px;box-shadow:0 0 0 1px rgba(200,145,58,0.2),0 24px 70px rgba(0,0,0,0.95)}
+.dl-btn{width:100%;padding:17px;border-radius:12px;border:none;background:linear-gradient(135deg,#6A3808,#C8913A);color:#F5D090;font-size:14px;font-weight:700;cursor:pointer;font-family:'Cinzel',serif}
+.re-btn{width:100%;padding:13px;border-radius:12px;border:1px solid rgba(200,145,58,0.22);background:rgba(200,145,58,0.08);color:rgba(200,145,58,0.6);font-size:12px;font-weight:700;cursor:pointer;font-family:'Cinzel',serif}
+.new-btn{width:100%;padding:11px;border-radius:12px;border:1px solid rgba(200,145,58,0.12);background:transparent;color:rgba(200,145,58,0.3);font-size:10px;cursor:pointer;font-family:'Cinzel',serif}
+</style>
+</head>
+<body>
+<div class="moon">☽</div>
+<div class="title">NUR AI · نور</div>
+<div class="sub">Islamic Poster Generator · DALL·E 3</div>
+<div class="card">
+  <div class="label">OpenAI API Key</div>
+  <input type="password" id="keyInp" placeholder="Paste your key here:  sk-proj-…">
+  <div class="hint">Stored only in your browser · Never shared with anyone</div>
+</div>
+<div class="card">
+  <div class="label">Choose Your Poster</div>
+  <div id="posterList"></div>
+</div>
+<button class="gen-btn" id="genBtn" onclick="generate()">✦ Generate Islamic Poster</button>
+<div style="font-size:9px;color:rgba(200,145,58,0.25);text-align:center;font-family:Georgia,serif">Powered by DALL·E 3 · ~20 seconds per poster</div>
+<div class="loading" id="loading">
+  <div class="spin">☽</div>
+  <div class="load-title">GENERATING YOUR POSTER</div>
+  <div class="load-msg" id="loadMsg">Sending to DALL·E 3…</div>
+  <div class="prog"><div class="prog-bar" id="progBar"></div></div>
+</div>
+<div class="errbox" id="errBox">
+  <div class="err-t">⚠️ Generation Failed</div>
+  <div class="err-m" id="errMsg"></div>
+</div>
+<div class="result" id="result">
+  <img id="resultImg" src="" alt="Generated Islamic Poster">
+  <button class="dl-btn" onclick="openImg()">⬇ Open Full Image — Hold to Save</button>
+  <button class="re-btn" onclick="generate()">↺ Regenerate</button>
+  <button class="new-btn" onclick="resetAll()">＋ New Poster</button>
+</div>
+<script>
+var POSTERS=[
+  {id:'unity',  icon:'🤝',name:'Unity of the Ummah',  desc:'وحدة الأمة — Brotherhood',     prompt:'Two Muslim scholars embracing warmly smiling with eyes closed, one in white thobe and white kufi cap, one in black robe and black imam turban, Masjid Nabawi green dome left background, Imam Ali golden dome right background, dramatic golden god-rays from sky, large Arabic gold calligraphy وحدة الأمة at top, white doves flying, crowd with green and red flags below, cinematic painterly Islamic poster, photorealistic ultra detailed high resolution'},
+  {id:'kaaba', icon:'🕋',name:'The Holy Kaaba',        desc:'Makkah — Masjid al-Haram',     prompt:'The Holy Kaaba in Masjid al-Haram Makkah, millions performing Tawaf, dramatic golden sunset light, intricate gold Kiswah fabric, Grand Mosque minarets, divine light shafts, deeply spiritual photorealistic ultra detailed'},
+  {id:'masjid',icon:'🕌',name:'Masjid at Night',       desc:'Atmospheric mosque beauty',    prompt:'Beautiful mosque at night, grand domes and minarets against deep blue starlit sky, crescent moon glowing, golden light from arched windows, reflecting pool mirroring the mosque, cinematic volumetric rays, ultra detailed painterly realism'},
+  {id:'ramadan',icon:'🌙',name:'Ramadan Night',        desc:'رمضان كريم — Blessed month',   prompt:'Magical Ramadan night, ornate glowing amber lantern, crescent moon indigo sky, mosque silhouette gold minarets, Arabic calligraphy رمضان كريم gold letters at top, warm cinematic painterly illustration ultra detailed'},
+  {id:'prophet',icon:'🌹',name:"Prophet's Mosque",    desc:'Al-Masjid an-Nabawi Madinah',  prompt:"Al-Masjid an-Nabawi Madinah, iconic green dome glowing golden sunset sky, white marble courtyard, worshippers, warm divine golden light, single white dove, deeply reverent cinematic ultra detailed"},
+  {id:'eid',   icon:'🎉',name:'Eid Mubarak',           desc:'عيد مبارك — Celebration',      prompt:'Joyful Eid celebration, Muslim family in traditional Eid clothes smiling, Islamic geometric decorations gold and green, beautiful mosque background, crescent moon, glowing lanterns, Arabic calligraphy عيد مبارك gold letters at top, warm cinematic painterly'},
+  {id:'quran', icon:'📖',name:'Holy Quran Art',        desc:'Illuminated manuscript beauty', prompt:'Open Holy Quran on ornate rehal stand, illuminated gold pages glowing, divine light upward, arabesque decorations, mosque interior background, majestic Islamic illuminated manuscript style ultra detailed'},
+  {id:'dua',   icon:'🤲',name:"Du'a — Hands in Prayer",desc:'Islamic supplication art',     prompt:'Muslim hands raised in dua, warm divine golden light from above, golden motes floating upward like prayers, Arabic calligraphy رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً gold above, emotional spiritual cinematic photorealistic'},
+];
+var sel='unity',lastUrl=null;
+var pl=document.getElementById('posterList');
+POSTERS.forEach(function(p){
+  var d=document.createElement('div');
+  d.className='ptype'+(p.id===sel?' on':'');d.id='pt-'+p.id;
+  d.innerHTML='<span class="ptype-icon">'+p.icon+'</span><div><div class="ptype-name">'+p.name+'</div><div class="ptype-desc">'+p.desc+'</div></div><span class="ptype-check">✓</span>';
+  d.onclick=function(){sel=p.id;document.querySelectorAll('.ptype').forEach(function(x){x.classList.remove('on');});d.classList.add('on');};
+  pl.appendChild(d);
+});
+var saved=localStorage.getItem('nur_ok');
+if(saved)document.getElementById('keyInp').value=saved;
+function generate(){
+  var key=document.getElementById('keyInp').value.trim();
+  if(!key){showErr('Please paste your OpenAI API key above first');return;}
+  localStorage.setItem('nur_ok',key);
+  var poster=POSTERS.find(function(x){return x.id===sel;});
+  document.getElementById('errBox').style.display='none';
+  document.getElementById('result').style.display='none';
+  document.getElementById('loading').style.display='flex';
+  document.getElementById('genBtn').disabled=true;
+  document.getElementById('genBtn').textContent='✦ Generating…';
+  var bar=document.getElementById('progBar');bar.style.width='0';
+  var prog=0,pt2=setInterval(function(){prog=Math.min(prog+Math.random()*6,88);bar.style.width=prog+'%';},700);
+  var msgs=['Sending to DALL·E 3…','AI painting your poster…','Adding calligraphy & light…','Almost ready…'];
+  var mi=0;document.getElementById('loadMsg').textContent=msgs[0];
+  var mt=setInterval(function(){mi=(mi+1)%msgs.length;document.getElementById('loadMsg').textContent=msgs[mi];},4000);
+  fetch('https://api.openai.com/v1/images/generations',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({model:'dall-e-3',prompt:poster.prompt+', high resolution professional quality ultra detailed award-winning art',n:1,size:'1024x1792',quality:'hd',style:'vivid'})
+  }).then(function(r){return r.json();}).then(function(data){
+    clearInterval(pt2);clearInterval(mt);bar.style.width='100%';
+    document.getElementById('genBtn').disabled=false;document.getElementById('genBtn').textContent='✦ Generate Islamic Poster';
+    document.getElementById('loading').style.display='none';
+    if(data.error){showErr(data.error.message);return;}
+    var url=data.data&&data.data[0]&&data.data[0].url;
+    if(!url){showErr('No image returned — please try again');return;}
+    lastUrl=url;document.getElementById('resultImg').src=url;
+    document.getElementById('result').style.display='flex';
+    window.scrollTo(0,document.body.scrollHeight);
+  }).catch(function(e){
+    clearInterval(pt2);clearInterval(mt);
+    document.getElementById('genBtn').disabled=false;document.getElementById('genBtn').textContent='✦ Generate Islamic Poster';
+    document.getElementById('loading').style.display='none';
+    showErr(e.message+' — Check billing at platform.openai.com/billing');
+  });
+}
+function showErr(m){document.getElementById('errMsg').textContent=m;document.getElementById('errBox').style.display='block';}
+function openImg(){if(lastUrl)window.open(lastUrl,'_blank');}
+function resetAll(){document.getElementById('result').style.display='none';window.scrollTo(0,0);}
+</script>
+</body>
+</html>
